@@ -5,10 +5,11 @@ import (
 	"log"
 	"time"
 
-	"github.com/warintorn1990/golang-graphql-mongo/graph/graph/model"
+	"github.com/warintorn1990/golang-graphql-mongo/graph/model"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"gopkg.in/mgo.v2/bson"
 )
 
 type DB struct {
@@ -43,4 +44,38 @@ func (db *DB) Save(input *model.NewDog) *model.Dog {
 		Name:      input.Name,
 		IsGoodBoi: input.IsGoodBoi,
 	}
+}
+
+func (db *DB) FindByID(ID string) *model.Dog {
+	ObjectID, err := primitive.ObjectIDFromHex(ID)
+	collection := db.client.Database("animals").Collection("dogs")
+	if err != nil {
+		log.Fatal(err)
+	}
+	ctxs, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	res := collection.FindOne(ctxs, bson.M{"_id": ObjectID})
+	dog := model.Dog{}
+	res.Decode(&dog)
+	return &dog
+}
+
+func (db *DB) All() []*model.Dog {
+	collection := db.client.Database("animals").Collection("dogs")
+	ctxs, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	cur, err := collection.Find(ctxs, bson.D{})
+	if err != nil {
+		log.Fatal(err)
+	}
+	var dogs []*model.Dog
+	for cur.Next(ctxs) {
+		var dog *model.Dog
+		err := cur.Decode(&dog)
+		if err != nil {
+			log.Fatal(err)
+		}
+		dogs = append(dogs, dog)
+	}
+	return dogs
 }

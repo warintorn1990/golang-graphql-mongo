@@ -7,8 +7,8 @@ import (
 	"context"
 
 	"github.com/warintorn1990/golang-graphql-mongo/database"
-	"github.com/warintorn1990/golang-graphql-mongo/graph/graph/generated"
-	"github.com/warintorn1990/golang-graphql-mongo/graph/graph/model"
+	"github.com/warintorn1990/golang-graphql-mongo/graph/generated"
+	"github.com/warintorn1990/golang-graphql-mongo/graph/model"
 )
 
 var db = database.Connect()
@@ -17,18 +17,16 @@ func (r *mutationResolver) CreateDog(ctx context.Context, input *model.NewDog) (
 	return db.Save(input), nil
 }
 
-// func (r *queryResolver) Dog(ctx context.Context, id string) (*model.Dog, error) {
-// 	return db.FindByID(id), nil
-// }
+func (r *queryResolver) Dog(ctx context.Context, id string) (*model.Dog, error) {
+	return db.FindByID(id), nil
+}
 
-// func (r *queryResolver) Dogs(ctx context.Context) ([]*model.Dog, error) {
-// 	return db.All(), nil
-// }
+func (r *queryResolver) Dogs(ctx context.Context) ([]*model.Dog, error) {
+	return db.All(), nil
+}
 
-// Mutation returns generated.MutationResolver implementation.
 func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResolver{r} }
 
-// Query returns generated.QueryResolver implementation.
 func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 
 type mutationResolver struct{ *Resolver }
